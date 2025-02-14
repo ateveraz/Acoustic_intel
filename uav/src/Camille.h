@@ -21,6 +21,9 @@ namespace flair {
         class PushButton;
         class Vector2DSpinBox;
         class CheckBox;
+        class ComboBox;
+        class DoubleSpinBox;
+        class GroupBox;
     }
     namespace meta {
         class MetaVrpnObject;
@@ -76,6 +79,8 @@ class Camille : public flair::meta::UavStateMachine {
         flair::core::Vector2Df posHold;
         flair::core::Vector2Df socketPos;
         float yawHold;
+        float yawDesired;
+        float yawFromSocket;
 
         flair::gui::PushButton *manualZVRPN,*positionHold,*gotoGcsPosition,*gotoSocketPosition,*carFollowing;
         flair::gui::CheckBox *takeOffInPositionHold;
@@ -83,6 +88,10 @@ class Camille : public flair::meta::UavStateMachine {
         flair::meta::MetaVrpnObject *targetVrpn,*uavVrpn;
         flair::core::AhrsData *customReferenceOrientation,*customOrientation;
 				flair::core::TcpSocket *listeningSocket,*message= nullptr;
+
+        flair::gui::GroupBox *yawSettings;
+        flair::gui::ComboBox *yawBehavior;
+        flair::gui::DoubleSpinBox *yawByGui;
 };
 
 #endif // CAMILLE_H

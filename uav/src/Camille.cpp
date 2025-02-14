@@ -16,6 +16,9 @@
 #include <Uav.h>
 #include <GridLayout.h>
 #include <PushButton.h>
+#include <ComboBox.h>
+#include <GroupBox.h>
+#include <DoubleSpinBox.h>
 #include <CheckBox.h>
 #include <Vector2DSpinBox.h>
 #include <DataPlot1D.h>
@@ -52,14 +55,23 @@ Camille::Camille(TargetController *controller,string ugvName,uint16_t listeningP
 	vrpnclient->Start();
 	
 	uav->GetAhrs()->YawPlot()->AddCurve(uavVrpn->State()->Element(2),DataPlot::Green);
-  uav->GetAhrs()->YawPlot()->AddCurve(targetVrpn->State()->Element(2),DataPlot::Black);
+  	uav->GetAhrs()->YawPlot()->AddCurve(targetVrpn->State()->Element(2),DataPlot::Black);
 															 
-  takeOffInPositionHold = new CheckBox(GetButtonsLayout()->NewRow(), "take off in position hold (and use z from optitrack)");
+  	takeOffInPositionHold = new CheckBox(GetButtonsLayout()->NewRow(), "take off in position hold (and use z from optitrack)");
 	manualZVRPN=new PushButton(GetButtonsLayout()->NewRow(),"manualZVRPN");
 	positionHold=new PushButton(GetButtonsLayout()->LastRowLastCol(),"positionHold");
 	carFollowing=new PushButton(GetButtonsLayout()->LastRowLastCol(),"CarFollowing");
 	gotoGcsPosition=new PushButton(GetButtonsLayout()->NewRow(),"gotoGcsPosition");
 	position=new Vector2DSpinBox(GetButtonsLayout()->LastRowLastCol(),"position",-5,5,1);
+
+	// Define yaw regulation. 
+	yawSettings = new GroupBox(GetButtonsLayout()->LastRowLastCol(), "Yaw settings");
+	yawBehavior = new ComboBox(yawSettings->NewRow(), "Select yaw behavior");
+	yawBehavior->AddItem("Set to zero (default)");
+	yawBehavior->AddItem("Use yaw from Socket ROS");
+	yawBehavior->AddItem("Use yaw from GUI");
+	yawByGui = new DoubleSpinBox(yawSettings->NewRow(), "Yaw from GUI", -3.1416, 3.1416, 0.1, 4);
+
 	gotoSocketPosition=new PushButton(GetButtonsLayout()->NewRow(),"gotoSocketPosition");
 	safeLand=new Vector2DSpinBox(GetButtonsLayout()->NewRow(),"safe landing position",-10,10,1);
 
@@ -76,8 +88,8 @@ Camille::Camille(TargetController *controller,string ugvName,uint16_t listeningP
 
 	customOrientation=new AhrsData(this,"orientation");
   
-  uavVrpn->zPlot()->AddCurve(GetAltitudeTrajectory()->GetMatrix()->Element(0), DataPlot::Green);
-  uavVrpn->VzPlot()->AddCurve(GetAltitudeTrajectory()->GetMatrix()->Element(1), DataPlot::Green);
+  	uavVrpn->zPlot()->AddCurve(GetAltitudeTrajectory()->GetMatrix()->Element(0), DataPlot::Green);
+  	uavVrpn->VzPlot()->AddCurve(GetAltitudeTrajectory()->GetMatrix()->Element(1), DataPlot::Green);
 	
 	listeningSocket=new TcpSocket(uav,"Message",false,false);
 	listeningSocket->Listen(listeningPort);
@@ -172,6 +184,17 @@ void Camille::PositionValues(Vector2Df &pos_error,Vector2Df &vel_error,float &ya
 	uav_pos.To2Dxy(uav_2Dpos);
 	uav_vel.To2Dxy(uav_2Dvel);
 
+	if (yawBehavior->CurrentIndex()==0) {
+		yawDesired = 0;
+	} else if (yawBehavior->CurrentIndex()==1) {
+		yawDesired = yawFromSocket;
+	} else if (yawBehavior->CurrentIndex()==2) {
+		yawDesired = yawByGui->Value();
+	} else {
+		Thread::Err("yawBehavior not handled\n");
+		EnterFailSafeMode();
+	}
+
 	if (behaviourMode==BehaviourMode_t::PositionHold) {
 		pos_error=uav_2Dpos-posHold;
 		vel_error=uav_2Dvel;
@@ -179,11 +202,11 @@ void Camille::PositionValues(Vector2Df &pos_error,Vector2Df &vel_error,float &ya
 	} else if (behaviourMode==BehaviourMode_t::GotoGCSPosition){
 		pos_error=uav_2Dpos-position->Value();
 		vel_error=uav_2Dvel;
-		yaw_ref=yawHold;
+		yaw_ref=yawDesired;
 	} else if (behaviourMode==BehaviourMode_t::GotoSocketPosition){
 		pos_error=uav_2Dpos-socketPos;
 		vel_error=uav_2Dvel;
-		yaw_ref=yawHold;
+		yaw_ref=yawDesired;
 	} else if (behaviourMode==BehaviourMode_t::CarFollowing){
 		Vector3Df target_pos,target_vel;
 		Vector2Df target_2Dpos,target_2Dvel;
@@ -335,6 +358,8 @@ void Camille::CheckMessages(void) {
 			if(socketPos.x!=msg[0] || socketPos.y!=msg[1]) Printf("new socket pos %f %f\n",msg[0],msg[1]);
 			socketPos.x=msg[0];
 			socketPos.y=msg[1];
+			// msg[2] contains the z-coordinate, but we don't use it. 
+			yawFromSocket=msg[3];
     }
   }
 }
