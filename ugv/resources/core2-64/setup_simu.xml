@@ -1,0 +1,107 @@
+<?xml version="1.0"?>
+<root name="FrameworkManager">
+  <TabWidget name="Main_TabWidget">
+    <Tab name="controls">
+      <DataPlot1D name="speed" period="100" enabled="1" nb_buf="1"/>
+      <DataPlot1D name="turn" period="100" enabled="1" nb_buf="1"/>
+    </Tab>
+    <Tab name="Dualshock3">
+      <TabWidget name="Dualshock3">
+        <Tab name="Reglages"/>
+      </TabWidget>
+    </Tab>
+    <Tab name="vrpn">
+      <TabWidget name="vrpn">
+        <Tab name="Reglages">
+          <GroupBox name="post rotation 1">
+            <DoubleSpinBox name="value" value="0"/>
+            <ComboBox name="axis" value="0"/>
+          </GroupBox>
+          <GroupBox name="post rotation 2">
+            <DoubleSpinBox name="value" value="0"/>
+            <ComboBox name="axis" value="0"/>
+          </GroupBox>
+          <GroupBox name="car_Passe bas">
+            <DoubleSpinBox name="period, 0 for auto" value="0"/>
+            <DoubleSpinBox name="cutoff frequency" value="1"/>
+          </GroupBox>
+          <GroupBox name="ugv_0_euler">
+            <DoubleSpinBox name="period, 0 for auto:" value="0"/>
+            <DoubleSpinBox name="saturation, -1 to disable:" value="-1"/>
+          </GroupBox>
+          <GroupBox name="target Passe bas">
+            <DoubleSpinBox name="period, 0 for auto" value="0"/>
+            <DoubleSpinBox name="cutoff frequency" value="1"/>
+          </GroupBox>
+          <GroupBox name="target_euler">
+            <DoubleSpinBox name="period, 0 for auto:" value="0"/>
+            <DoubleSpinBox name="saturation, -1 to disable:" value="-1"/>
+          </GroupBox>
+          <GroupBox name="circle">
+            <DoubleSpinBox name="period, 0 for auto" value="0"/>
+            <DoubleSpinBox name="R" value="1"/>
+            <DoubleSpinBox name="velocity" value="0.5"/>
+            <DoubleSpinBox name="acceleration (absolute)" value="0.1"/>
+          </GroupBox>
+        <GroupBox name="car Passe bas"><DoubleSpinBox name="period, 0 for auto" value="0.01"/><DoubleSpinBox name="cutoff frequency" value="2"/></GroupBox><GroupBox name="car_euler"><DoubleSpinBox name="period, 0 for auto:" value="0.01"/><DoubleSpinBox name="saturation, -1 to disable:" value="-1"/></GroupBox></Tab>
+        <Tab name="Mesures ugv_0">
+          <DataPlot1D name="x" period="100" enabled="1"/>
+          <DataPlot1D name="y" period="100" enabled="1"/>
+          <DataPlot1D name="z" period="100" enabled="0"/>
+          <DataPlot1D name="vx" period="100" enabled="1"/>
+          <DataPlot1D name="vy" period="100" enabled="1"/>
+          <DataPlot1D name="vz" period="100" enabled="0"/>
+        </Tab>
+        <Tab name="Mesures (xy) ugv_0">
+          <DataPlot2D name="xy" period="100" enabled="1"/>
+        </Tab>
+        <Tab name="Mesures target">
+          <DataPlot1D name="x" period="100" enabled="0"/>
+          <DataPlot1D name="y" period="100" enabled="0"/>
+          <DataPlot1D name="z" period="100" enabled="0"/>
+          <DataPlot1D name="vx" period="100" enabled="0"/>
+          <DataPlot1D name="vy" period="100" enabled="0"/>
+          <DataPlot1D name="vz" period="100" enabled="0"/>
+        </Tab>
+        <Tab name="Mesures (xy) target">
+          <DataPlot2D name="xy" period="100" enabled="0"/>
+        </Tab>
+      <Tab name="Mesures car"><DataPlot1D name="x" period="100" enabled="0" nb_buf="1"/><DataPlot1D name="y" period="100" enabled="0" nb_buf="1"/><DataPlot1D name="z" period="100" enabled="0" nb_buf="1"/><DataPlot1D name="vx" period="100" enabled="0" nb_buf="1"/><DataPlot1D name="vy" period="100" enabled="0" nb_buf="1"/><DataPlot1D name="vz" period="100" enabled="0" nb_buf="1"/></Tab><Tab name="Mesures (xy) car"><DataPlot2D name="xy" period="100" enabled="1" nb_buf="1"/></Tab></TabWidget>
+    </Tab>
+    <Tab name="ugv">
+      <GridLayout name="buttons">
+        <PushButton name="kill"/>
+        <PushButton name="start_circle" value="1"/>
+        <PushButton name="stop_circle" value="1"/>
+      <PushButton name="quit program"/><PushButton name="start_log"/><PushButton name="stop_log"/></GridLayout>
+    </Tab>
+    <Tab name="control laws">
+      <TabWidget name="laws">
+        <Tab name="Setup">
+          <GroupBox name="u_x">
+            <DoubleSpinBox name="period, 0 for auto" value="0"/>
+            <DoubleSpinBox name="kp:" value="1.5"/>
+            <DoubleSpinBox name="ki:" value="0.1"/>
+            <DoubleSpinBox name="sat i:" value="0"/>
+            <DoubleSpinBox name="kd:" value="0.3"/>
+            <DoubleSpinBox name="sat:" value="1"/>
+          </GroupBox>
+          <GroupBox name="u_y">
+            <DoubleSpinBox name="period, 0 for auto" value="0"/>
+            <DoubleSpinBox name="kp:" value="1.5"/>
+            <DoubleSpinBox name="ki:" value="0.1"/>
+            <DoubleSpinBox name="sat i:" value="0"/>
+            <DoubleSpinBox name="kd:" value="0.3"/>
+            <DoubleSpinBox name="sat:" value="1"/>
+          </GroupBox>
+          <DoubleSpinBox name="L" value="1"/>
+        </Tab>
+        <Tab name="Graphes">
+          <DataPlot1D name="u_x" period="100" enabled="0" nb_buf="1"/>
+          <DataPlot1D name="u_y" period="100" enabled="0" nb_buf="1"/>
+        </Tab>
+      </TabWidget>
+    </Tab>
+  </TabWidget>
+  <PushButton name="save config on target (ugv_0)" value="1"/>
+<PushButton name="save config on target (car)" value="1"/></root>
