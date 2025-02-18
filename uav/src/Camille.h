@@ -15,6 +15,7 @@
 #define CAMILLE_H
 
 #include <UavStateMachine.h>
+#include "Sliding_pos.h"
 
 namespace flair {
     namespace gui {
@@ -24,6 +25,8 @@ namespace flair {
         class ComboBox;
         class DoubleSpinBox;
         class GroupBox;
+        class Tab;
+        class TabWidget;
     }
     namespace meta {
         class MetaVrpnObject;
@@ -33,6 +36,9 @@ namespace flair {
     }
 		namespace core {
         class TcpSocket;
+    }
+    namespace filter {
+        class Sliding_pos;
     }
 }
 
@@ -74,7 +80,15 @@ class Camille : public flair::meta::UavStateMachine {
 				void LowBatteryAction(void);
 				void CheckMessages(void);
 
+        void ComputeCustomTorques(flair::core::Euler &torques);
+        float ComputeCustomThrust(void);
+
+        void sliding_ctrl_pos(flair::core::Euler &torques);
+
+        float thrust;
+        
         flair::filter::Pid *uX, *uY;
+        flair::filter::Sliding_pos *u_sliding_pos;
 
         flair::core::Vector2Df posHold;
         flair::core::Vector2Df socketPos;
@@ -92,6 +106,10 @@ class Camille : public flair::meta::UavStateMachine {
         flair::gui::GroupBox *yawSettings;
         flair::gui::ComboBox *yawBehavior;
         flair::gui::DoubleSpinBox *yawByGui;
+
+        // Tabs for custom controllers.
+        flair::gui::Tab *custom_controller_tab;
+        flair::gui::TabWidget *custom_controller_tab_widget; 
 };
 
 #endif // CAMILLE_H

@@ -30,11 +30,13 @@
 #include <cmath>
 #include <Tab.h>
 #include <Pid.h>
+#include <TabWidget.h>
 #include <Ahrs.h>
 #include <AhrsData.h>
 #include <TrajectoryGenerator1D.h>
 #include <TcpSocket.h>
 #include <stdexcept>
+#include "Sliding_pos.cpp"
 
 using namespace std;
 using namespace flair::core;
@@ -79,6 +81,9 @@ Camille::Camille(TargetController *controller,string ugvName,uint16_t listeningP
 	uX->UseDefaultPlot(graphLawTab->NewRow());
 	uY=new Pid(setupLawTab->At(1,1),"u_y");
 	uY->UseDefaultPlot(graphLawTab->LastRowLastCol());
+
+	Tab *custom_controller_tab = new Tab(getFrameworkManager()->GetTabWidget(), "Custom controller");
+	TabWidget *custom_controller_tab_widget = new TabWidget(custom_controller_tab->NewRow(), "Custom controller");
 
 	customReferenceOrientation= new AhrsData(this,"reference");
 	uav->GetAhrs()->AddPlot(customReferenceOrientation,DataPlot::Yellow);
@@ -460,4 +465,27 @@ void Camille::CarFollowing(void) {
 	uY->Reset();
 	behaviourMode=BehaviourMode_t::CarFollowing;
 	Thread::Info("Camille: CarFollowing\n");
+}
+
+void Camille::ComputeCustomTorques(Euler &torques) {
+    ComputeDefaultTorques(torques);
+    thrust = ComputeDefaultThrust();
+	sliding_ctrl_pos(torques);
+}
+
+
+float Camille::ComputeCustomThrust(void) {
+	return thrust;
+}
+
+void Camille::StartCustomController(void)
+{
+    //ask UavStateMachine to enter in custom torques
+    if (SetTorqueMode(TorqueMode_t::Custom) && SetThrustMode(ThrustMode_t::Custom)) {
+        Thread::Info("SMC: start\n");
+        u_sliding_pos->Reset();
+    } else {
+        Thread::Warn("SMC: Could not start\n");
+        return;
+	}
 }
