@@ -489,3 +489,58 @@ void Camille::StartCustomController(void)
         return;
 	}
 }
+
+void ctrl1::sliding_ctrl_pos(Euler &torques){
+    float tactual=double(GetTime())/1000000000-u_sliding_pos->t0;
+    //printf("t: %f\n",tactual);
+    Vector3Df xid, xidp, xidpp, xidppp;
+
+    Vector3Df uav_pos,uav_vel; // in VRPN coordinate system
+    Quaternion uav_quat;
+
+    //flair::core::Time ti = GetTime();
+    uavVrpn->GetPosition(uav_pos);
+    uavVrpn->GetSpeed(uav_vel);
+    uavVrpn->GetQuaternion(uav_quat);
+    //flair::core::Time  tf = GetTime()-ti;
+
+    //Printf("pos: %f ms\n",  (float)tf/1000000);
+
+    //Thread::Info("Pos: %f\t %f\t %f\n",uav_pos.x,uav_pos.y, uav_pos.z);
+    //Printf("Pos: %f\t %f\t %f\n",uav_pos.x,uav_pos.y, uav_pos.z);
+    //Printf("Vel: %f\t %f\t %f\n",uav_vel.x,uav_vel.y, uav_vel.z);
+    //Thread::Info("Vel: %f\t %f\t %f\n",uav_vel.x,uav_vel.y, uav_vel.z);
+
+    //ti = GetTime();
+    const AhrsData *currentOrientation = GetDefaultOrientation();
+    Quaternion currentQuaternion;
+    Vector3Df currentAngularRates;
+    currentOrientation->GetQuaternionAndAngularRates(currentQuaternion, currentAngularRates);
+    //tf = GetTime()-ti;
+
+    //Printf("ori: %f ms\n",  (float)tf/1000000);
+    
+    Vector3Df currentAngularSpeed = GetCurrentAngularSpeed();
+    
+	Vector2Df pos_err, vel_err; // in Uav coordinate system
+	float yaw_ref;
+	Euler refAngles;
+
+	PositionValues(pos_err, vel_err, yaw_ref);
+
+	refAngles.yaw=yaw_ref;
+
+
+    pos_reference(xid, xidp, xidpp, xidppp, tactual);
+
+    //printf("xid: %f\t %f\t %f\n",xid.x,xid.y, xid.z);
+    
+    u_sliding_pos->SetValues(uav_pos-xid,uav_vel-xidp,xid,xidpp,xidppp,currentAngularRates,currentQuaternion);
+    
+    u_sliding_pos->Update(GetTime());
+
+    torques.roll = u_sliding_pos->Output(0);
+    torques.pitch = u_sliding_pos->Output(1);
+    torques.yaw = u_sliding_pos->Output(2);
+    thrust = u_sliding_pos->Output(3);
+}
