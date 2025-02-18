@@ -64,8 +64,6 @@ Camille::Camille(TargetController *controller,string ugvName,uint16_t listeningP
 	gotoGcsPosition=new PushButton(GetButtonsLayout()->NewRow(),"gotoGcsPosition");
 	position=new Vector2DSpinBox(GetButtonsLayout()->LastRowLastCol(),"position",-5,5,1);
 
-	// Simulate path_planning source
-	findSource = new PushButton(GetButtonsLayout()->NewRow(), "Find source");
 
 	// Define yaw regulation. 
 	yawSettings = new GroupBox(GetButtonsLayout()->LastRowLastCol(), "Yaw settings");
@@ -78,7 +76,10 @@ Camille::Camille(TargetController *controller,string ugvName,uint16_t listeningP
 	gotoSocketPosition=new PushButton(GetButtonsLayout()->NewRow(),"gotoSocketPosition");
 	safeLand=new Vector2DSpinBox(GetButtonsLayout()->NewRow(),"safe landing position",-10,10,1);
 
-	// Simulate sound source	
+	// Simulate path_planning source
+	planning_settings = new GroupBox(GetButtonsLayout()->NewRow(), "Path planning settings");
+	findSource = new PushButton(planning_settings->NewRow(), "Find source");
+	step_size = new DoubleSpinBox(planning_settings->NewRow(), "Step size", 0.01, 10, 0.1, 2);
 
 	uX=new Pid(setupLawTab->At(1,0),"u_x");
 	uX->UseDefaultPlot(graphLawTab->NewRow());
@@ -219,20 +220,24 @@ void Camille::PositionValues(Vector2Df &pos_error,Vector2Df &vel_error,float &ya
 		yaw_ref=yawDesired;
 	} 
 	else if (behaviourMode==BehaviourMode_t::GotoSourceUsingPathPlanning){
-		Vector3Df target_pos_sim;
-		Vector2Df target_2Dpos_sim;
-		targetVrpn->GetPosition(target_pos_sim);
-		target_pos_sim.To2Dxy(target_2Dpos_sim);
-
-		float angle = atan2(target_2Dpos_sim.y - uav_2Dpos.y, target_2Dpos_sim.x - uav_2Dpos.x);
+		float angle;
+		if (yawBehavior->CurrentIndex()==1) {
+			angle = yawFromSocket;
+		} else {
+			Vector3Df target_pos_sim;
+			Vector2Df target_2Dpos_sim;
+			targetVrpn->GetPosition(target_pos_sim);
+			target_pos_sim.To2Dxy(target_2Dpos_sim);
+	
+			angle = atan2(target_2Dpos_sim.y - uav_2Dpos.y, target_2Dpos_sim.x - uav_2Dpos.x);
+		}
 
 		Vector2Df next_position;
-		float step_size = 0.5;
-		computePathPlannig(uav_2Dpos, angle, step_size, next_position);
+		computePathPlannig(uav_2Dpos, angle, step_size->Value(), next_position);
 
 		pos_error = uav_2Dpos-next_position;
 		vel_error = uav_2Dvel;
-		yaw_ref = angle; // calculateAngleError(currentAngles.yaw, angle);
+		yaw_ref = angle;
 	}
 	else if (behaviourMode==BehaviourMode_t::CarFollowing){
 		Vector3Df target_pos,target_vel;
@@ -499,15 +504,4 @@ void Camille::CarFollowing(void) {
 	uY->Reset();
 	behaviourMode=BehaviourMode_t::CarFollowing;
 	Thread::Info("Camille: CarFollowing\n");
-}
-
-float Camille::normalizeAngle(float angle) {
-    while (angle > M_PI) angle -= 2.0 * M_PI;
-    while (angle < -M_PI) angle += 2.0 * M_PI;
-    return angle;
-}
-
-float Camille::calculateAngleError(float targetAngle, float currentAngle) {
-    float error = targetAngle - currentAngle;
-    return normalizeAngle(error);
 }

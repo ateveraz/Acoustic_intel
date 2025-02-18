@@ -76,8 +76,6 @@ class Camille : public flair::meta::UavStateMachine {
 				void CheckMessages(void);
         void GotoSourceUsingPathPlanning(void);
         void computePathPlannig(flair::core::Vector2Df uav_position, float angle, float step, flair::core::Vector2Df &next_position);
-        float normalizeAngle(float angle);
-        float calculateAngleError(float targetAngle, float currentAngle);
 
         flair::filter::Pid *uX, *uY;
 
@@ -94,9 +92,9 @@ class Camille : public flair::meta::UavStateMachine {
         flair::core::AhrsData *customReferenceOrientation,*customOrientation;
 				flair::core::TcpSocket *listeningSocket,*message= nullptr;
 
-        flair::gui::GroupBox *yawSettings;
+        flair::gui::GroupBox *yawSettings, *planning_settings;
         flair::gui::ComboBox *yawBehavior;
-        flair::gui::DoubleSpinBox *yawByGui;
+        flair::gui::DoubleSpinBox *yawByGui, *step_size;
 };
 
 #endif // CAMILLE_H
