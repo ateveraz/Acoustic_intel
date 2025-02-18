@@ -353,7 +353,7 @@ void Camille::ExtraCheckJoystick(void) {
 
 void Camille::CheckMessages(void) {
   if(message) {
-    float msg[3];
+    float msg[4];
     while(message->RecvMessage((char*)msg,sizeof(msg),TIME_NONBLOCK)>0) {
 			if(socketPos.x!=msg[0] || socketPos.y!=msg[1]) Printf("new socket pos %f %f\n",msg[0],msg[1]);
 			socketPos.x=msg[0];
