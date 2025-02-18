@@ -77,7 +77,7 @@ class Camille : public flair::meta::UavStateMachine {
         void GotoSourceUsingPathPlanning(void);
         void computePathPlannig(flair::core::Vector2Df uav_position, float angle, float step, flair::core::Vector2Df &next_position);
         float normalizeAngle(float angle);
-        float calculateAngleError(float angle1, float angle2);
+        float calculateAngleError(float targetAngle, float currentAngle);
 
         flair::filter::Pid *uX, *uY;
 
