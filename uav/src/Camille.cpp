@@ -189,6 +189,11 @@ void Camille::PositionValues(Vector2Df &pos_error,Vector2Df &vel_error,float &ya
 	uav_pos.To2Dxy(uav_2Dpos);
 	uav_vel.To2Dxy(uav_2Dvel);
 
+	// In VRPN frame
+	Quaternion currentQuaternion=GetCurrentQuaternion();
+	Euler currentAngles;//in vrpn frame
+	currentQuaternion.ToEuler(currentAngles);
+
 	if (yawBehavior->CurrentIndex()==0) {
 		yawDesired = 0;
 	} else if (yawBehavior->CurrentIndex()==1) {
@@ -222,12 +227,12 @@ void Camille::PositionValues(Vector2Df &pos_error,Vector2Df &vel_error,float &ya
 		float angle = atan2(target_2Dpos_sim.y - uav_2Dpos.y, target_2Dpos_sim.x - uav_2Dpos.x);
 
 		Vector2Df next_position;
-		float step_size = 0.1;
+		float step_size = 0.5;
 		computePathPlannig(uav_2Dpos, angle, step_size, next_position);
 
 		pos_error = uav_2Dpos-next_position;
 		vel_error = uav_2Dvel;
-		yaw_ref = 0;
+		yaw_ref = angle; // calculateAngleError(currentAngles.yaw, angle);
 	}
 	else if (behaviourMode==BehaviourMode_t::CarFollowing){
 		Vector3Df target_pos,target_vel;
@@ -258,9 +263,6 @@ void Camille::PositionValues(Vector2Df &pos_error,Vector2Df &vel_error,float &ya
 	}
 
 	//error in uav frame
-	Quaternion currentQuaternion=GetCurrentQuaternion();
-	Euler currentAngles;//in vrpn frame
-	currentQuaternion.ToEuler(currentAngles);
 	pos_error.Rotate(-currentAngles.yaw);
 	vel_error.Rotate(-currentAngles.yaw);
 }
@@ -497,4 +499,15 @@ void Camille::CarFollowing(void) {
 	uY->Reset();
 	behaviourMode=BehaviourMode_t::CarFollowing;
 	Thread::Info("Camille: CarFollowing\n");
+}
+
+float Camille::normalizeAngle(float angle) {
+    while (angle > M_PI) angle -= 2.0 * M_PI;
+    while (angle < -M_PI) angle += 2.0 * M_PI;
+    return angle;
+}
+
+float Camille::calculateAngleError(float targetAngle, float currentAngle) {
+    float error = targetAngle - currentAngle;
+    return normalizeAngle(error);
 }
