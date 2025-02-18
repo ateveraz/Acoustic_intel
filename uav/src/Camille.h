@@ -52,6 +52,7 @@ class Camille : public flair::meta::UavStateMachine {
 						CarFollowing,
 						LowBatteryGotoLandingPosition,
 						LowBatteryLanding,
+            GotoSourceUsingPathPlanning,
         };
 
         BehaviourMode_t behaviourMode;
@@ -73,6 +74,8 @@ class Camille : public flair::meta::UavStateMachine {
         void SignalEvent(Event_t event);
 				void LowBatteryAction(void);
 				void CheckMessages(void);
+        void GotoSourceUsingPathPlanning(void);
+        void computePathPlannig(flair::core::Vector2Df uav_position, float angle, float step, flair::core::Vector2Df &next_position);
 
         flair::filter::Pid *uX, *uY;
 
@@ -82,7 +85,7 @@ class Camille : public flair::meta::UavStateMachine {
         float yawDesired;
         float yawFromSocket;
 
-        flair::gui::PushButton *manualZVRPN,*positionHold,*gotoGcsPosition,*gotoSocketPosition,*carFollowing;
+        flair::gui::PushButton *manualZVRPN,*positionHold,*gotoGcsPosition,*gotoSocketPosition,*carFollowing, *findSource;
         flair::gui::CheckBox *takeOffInPositionHold;
         flair::gui::Vector2DSpinBox *position,*safeLand;
         flair::meta::MetaVrpnObject *targetVrpn,*uavVrpn;

@@ -64,6 +64,9 @@ Camille::Camille(TargetController *controller,string ugvName,uint16_t listeningP
 	gotoGcsPosition=new PushButton(GetButtonsLayout()->NewRow(),"gotoGcsPosition");
 	position=new Vector2DSpinBox(GetButtonsLayout()->LastRowLastCol(),"position",-5,5,1);
 
+	// Simulate path_planning source
+	findSource = new PushButton(GetButtonsLayout()->NewRow(), "Find source");
+
 	// Define yaw regulation. 
 	yawSettings = new GroupBox(GetButtonsLayout()->LastRowLastCol(), "Yaw settings");
 	yawBehavior = new ComboBox(yawSettings->NewRow(), "Select yaw behavior");
@@ -74,6 +77,8 @@ Camille::Camille(TargetController *controller,string ugvName,uint16_t listeningP
 
 	gotoSocketPosition=new PushButton(GetButtonsLayout()->NewRow(),"gotoSocketPosition");
 	safeLand=new Vector2DSpinBox(GetButtonsLayout()->NewRow(),"safe landing position",-10,10,1);
+
+	// Simulate sound source	
 
 	uX=new Pid(setupLawTab->At(1,0),"u_x");
 	uX->UseDefaultPlot(graphLawTab->NewRow());
@@ -207,7 +212,24 @@ void Camille::PositionValues(Vector2Df &pos_error,Vector2Df &vel_error,float &ya
 		pos_error=uav_2Dpos-socketPos;
 		vel_error=uav_2Dvel;
 		yaw_ref=yawDesired;
-	} else if (behaviourMode==BehaviourMode_t::CarFollowing){
+	} 
+	else if (behaviourMode==BehaviourMode_t::GotoSourceUsingPathPlanning){
+		Vector3Df target_pos_sim;
+		Vector2Df target_2Dpos_sim;
+		targetVrpn->GetPosition(target_pos_sim);
+		target_pos_sim.To2Dxy(target_2Dpos_sim);
+
+		float angle = atan2(target_2Dpos_sim.y - uav_2Dpos.y, target_2Dpos_sim.x - uav_2Dpos.x);
+
+		Vector2Df next_position;
+		float step_size = 0.1;
+		computePathPlannig(uav_2Dpos, angle, step_size, next_position);
+
+		pos_error = uav_2Dpos-next_position;
+		vel_error = uav_2Dvel;
+		yaw_ref = 0;
+	}
+	else if (behaviourMode==BehaviourMode_t::CarFollowing){
 		Vector3Df target_pos,target_vel;
 		Vector2Df target_2Dpos,target_2Dvel;
 
@@ -295,7 +317,7 @@ void Camille::LowBatteryAction(void) {
 
 void Camille::ExtraSecurityCheck(void) {
 	if (!vrpnLost && behaviourMode!=BehaviourMode_t::Default) {
-		if (!targetVrpn->IsTracked(500) && behaviourMode==BehaviourMode_t::CarFollowing) {
+		if (!targetVrpn->IsTracked(500) && (behaviourMode==BehaviourMode_t::CarFollowing || behaviourMode==BehaviourMode_t::GotoSourceUsingPathPlanning)) {
 			Thread::Err("VRPN, target lost\n");
 			vrpnLost=true;
 			EnterFailSafeMode();
@@ -325,6 +347,9 @@ void Camille::ExtraCheckPushButton(void) {
 	}
 	if(carFollowing->Clicked()) {
 		CarFollowing();
+	}
+	if(findSource->Clicked()) {
+		GotoSourceUsingPathPlanning();
 	}
 }
 
@@ -410,6 +435,18 @@ void Camille::GotoSocketPosition(void) {
 	
 	behaviourMode=BehaviourMode_t::GotoSocketPosition;
 	Thread::Info("Camille: goto socket position\n");
+}
+
+void Camille::GotoSourceUsingPathPlanning(void)
+{
+	behaviourMode=BehaviourMode_t::GotoSourceUsingPathPlanning;
+	Thread::Info("Camille: goto source using path planning\n");
+}
+
+void Camille::computePathPlannig(Vector2Df uav_position, float angle, float step, Vector2Df &next_position)
+{
+	// Simulate path planning
+	next_position = uav_position + step * Vector2Df(cos(angle) + sin(angle), sin(angle) - cos(angle));
 }
 
 
