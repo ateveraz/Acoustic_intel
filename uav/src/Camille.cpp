@@ -118,6 +118,15 @@ Camille::Camille(TargetController *controller,string ugvName,uint16_t listeningP
     }
   }
   Thread::Info("Debug: Connexion accepted\n");*/
+
+  // Custom logs
+  MatrixDescriptor *customLogsDescriptor = new MatrixDescriptor(2, 1);
+  customLogsDescriptor->SetElementName(0, 0, "Desired_x");
+  customLogsDescriptor->SetElementName(1, 0, "Desired_y");
+  customLogs = new Matrix(this, customLogsDescriptor, floatType, "CustomLogs");
+  delete customLogsDescriptor;
+
+  AddDataToControlLawLog(customLogs);
 }
 
 Camille::~Camille() {
@@ -495,6 +504,12 @@ void Camille::computePathPlannig(Vector2Df uav_position, float angle, float step
 {
 	// Simulate path planning
 	next_position = uav_position + step * Vector2Df(cos(angle) + sin(angle), sin(angle) - cos(angle));
+
+	// Update custom logs
+	customLogs->GetMutex();
+	customLogs->SetValue(0, 0, next_position.x);
+	customLogs->SetValue(1, 0, next_position.y);
+	customLogs->ReleaseMutex();
 }
 
 

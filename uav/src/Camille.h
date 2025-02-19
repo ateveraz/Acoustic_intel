@@ -33,6 +33,7 @@ namespace flair {
     }
 		namespace core {
         class TcpSocket;
+        class Matrix;
     }
 }
 
@@ -97,6 +98,8 @@ class Camille : public flair::meta::UavStateMachine {
         flair::gui::GroupBox *yawSettings, *planning_settings, *security_settings;
         flair::gui::ComboBox *yawBehavior;
         flair::gui::DoubleSpinBox *yawByGui, *step_size;
+
+        flair::core::Matrix *customLogs;
 };
 
 #endif // CAMILLE_H
