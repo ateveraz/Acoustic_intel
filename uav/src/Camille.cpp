@@ -225,19 +225,24 @@ void Camille::PositionValues(Vector2Df &pos_error,Vector2Df &vel_error,float &ya
 		vel_error=uav_2Dvel;
 		yaw_ref=yawDesired;
 	} 
-	else if (behaviourMode==BehaviourMode_t::GotoSourceUsingPathPlanning){
+	else if (behaviourMode==BehaviourMode_t::GotoSourceUsingVRPN){
 		float angle;
-		if (yawBehavior->CurrentIndex()==1) {
-			angle = yawFromSocket;
-		} else {
-			Vector3Df target_pos_sim;
-			Vector2Df target_2Dpos_sim;
-			targetVrpn->GetPosition(target_pos_sim);
-			target_pos_sim.To2Dxy(target_2Dpos_sim);
-	
-			angle = atan2(target_2Dpos_sim.y - uav_2Dpos.y, target_2Dpos_sim.x - uav_2Dpos.x);
-		}
+		Vector3Df target_pos_sim;
+		Vector2Df target_2Dpos_sim;
+		targetVrpn->GetPosition(target_pos_sim);
+		target_pos_sim.To2Dxy(target_2Dpos_sim);
 
+		angle = atan2(target_2Dpos_sim.y - uav_2Dpos.y, target_2Dpos_sim.x - uav_2Dpos.x);
+
+		Vector2Df next_position;
+		computePathPlannig(uav_2Dpos, angle, step_size->Value(), next_position);
+		saturatedPosition(next_position);
+		pos_error = uav_2Dpos - next_position;
+		vel_error = uav_2Dvel;
+		yaw_ref = angle;
+	}
+	else if (behaviourMode==BehaviourMode_t::GotoSourceUsingSocket){
+		float angle = yawFromSocket;
 		Vector2Df next_position;
 		computePathPlannig(uav_2Dpos, angle, step_size->Value(), next_position);
 		saturatedPosition(next_position);
@@ -351,7 +356,7 @@ void Camille::LowBatteryAction(void) {
 
 void Camille::ExtraSecurityCheck(void) {
 	if (!vrpnLost && behaviourMode!=BehaviourMode_t::Default) {
-		if (!targetVrpn->IsTracked(500) && (behaviourMode==BehaviourMode_t::CarFollowing || behaviourMode==BehaviourMode_t::GotoSourceUsingPathPlanning)) {
+		if (!targetVrpn->IsTracked(500) && (behaviourMode==BehaviourMode_t::CarFollowing || behaviourMode==BehaviourMode_t::GotoSourceUsingVRPN)) {
 			Thread::Err("VRPN, target lost\n");
 			vrpnLost=true;
 			EnterFailSafeMode();
@@ -473,8 +478,17 @@ void Camille::GotoSocketPosition(void) {
 
 void Camille::GotoSourceUsingPathPlanning(void)
 {
-	behaviourMode=BehaviourMode_t::GotoSourceUsingPathPlanning;
-	Thread::Info("Camille: goto source using path planning\n");
+	if (yawBehavior->CurrentIndex() == 1) {
+		behaviourMode = BehaviourMode_t::GotoSourceUsingSocket;
+		Thread::Info("Camille: Go to source using angle from socket. \n");
+		return;
+	}
+	else
+	{
+		behaviourMode=BehaviourMode_t::GotoSourceUsingVRPN;
+		Thread::Info("Camille: Go to source using its VRPN position. \n");
+		return;
+	}
 }
 
 void Camille::computePathPlannig(Vector2Df uav_position, float angle, float step, Vector2Df &next_position)

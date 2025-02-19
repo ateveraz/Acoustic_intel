@@ -52,7 +52,8 @@ class Camille : public flair::meta::UavStateMachine {
 						CarFollowing,
 						LowBatteryGotoLandingPosition,
 						LowBatteryLanding,
-            GotoSourceUsingPathPlanning,
+            GotoSourceUsingVRPN,
+            GotoSourceUsingSocket
         };
 
         BehaviourMode_t behaviourMode;
