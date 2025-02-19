@@ -76,6 +76,7 @@ class Camille : public flair::meta::UavStateMachine {
 				void CheckMessages(void);
         void GotoSourceUsingPathPlanning(void);
         void computePathPlannig(flair::core::Vector2Df uav_position, float angle, float step, flair::core::Vector2Df &next_position);
+        void saturatedPosition(flair::core::Vector2Df &position);
 
         flair::filter::Pid *uX, *uY;
 
@@ -87,12 +88,12 @@ class Camille : public flair::meta::UavStateMachine {
 
         flair::gui::PushButton *manualZVRPN,*positionHold,*gotoGcsPosition,*gotoSocketPosition,*carFollowing, *findSource;
         flair::gui::CheckBox *takeOffInPositionHold;
-        flair::gui::Vector2DSpinBox *position,*safeLand;
+        flair::gui::Vector2DSpinBox *position,*safeLand, *saturated;
         flair::meta::MetaVrpnObject *targetVrpn,*uavVrpn;
         flair::core::AhrsData *customReferenceOrientation,*customOrientation;
 				flair::core::TcpSocket *listeningSocket,*message= nullptr;
 
-        flair::gui::GroupBox *yawSettings, *planning_settings;
+        flair::gui::GroupBox *yawSettings, *planning_settings, *security_settings;
         flair::gui::ComboBox *yawBehavior;
         flair::gui::DoubleSpinBox *yawByGui, *step_size;
 };

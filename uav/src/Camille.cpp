@@ -81,6 +81,9 @@ Camille::Camille(TargetController *controller,string ugvName,uint16_t listeningP
 	findSource = new PushButton(planning_settings->NewRow(), "Find source");
 	step_size = new DoubleSpinBox(planning_settings->NewRow(), "Step size", 0.01, 10, 0.1, 2);
 
+	security_settings = new GroupBox(GetButtonsLayout()->NewRow(), "Security");
+	saturated = new Vector2DSpinBox(security_settings->NewRow(), "Saturated position", -3, 3, 2, 2);
+
 	uX=new Pid(setupLawTab->At(1,0),"u_x");
 	uX->UseDefaultPlot(graphLawTab->NewRow());
 	uY=new Pid(setupLawTab->At(1,1),"u_y");
@@ -211,10 +214,13 @@ void Camille::PositionValues(Vector2Df &pos_error,Vector2Df &vel_error,float &ya
 		vel_error=uav_2Dvel;
 		yaw_ref=yawHold;
 	} else if (behaviourMode==BehaviourMode_t::GotoGCSPosition){
-		pos_error=uav_2Dpos-position->Value();
+		Vector2Df position_gui = position->Value();
+		saturatedPosition(position_gui);
+		pos_error=uav_2Dpos-position_gui;
 		vel_error=uav_2Dvel;
 		yaw_ref=yawDesired;
 	} else if (behaviourMode==BehaviourMode_t::GotoSocketPosition){
+		saturatedPosition(socketPos);
 		pos_error=uav_2Dpos-socketPos;
 		vel_error=uav_2Dvel;
 		yaw_ref=yawDesired;
@@ -234,8 +240,8 @@ void Camille::PositionValues(Vector2Df &pos_error,Vector2Df &vel_error,float &ya
 
 		Vector2Df next_position;
 		computePathPlannig(uav_2Dpos, angle, step_size->Value(), next_position);
-
-		pos_error = uav_2Dpos-next_position;
+		saturatedPosition(next_position);
+		pos_error = uav_2Dpos - next_position;
 		vel_error = uav_2Dvel;
 		yaw_ref = angle;
 	}
@@ -249,6 +255,7 @@ void Camille::PositionValues(Vector2Df &pos_error,Vector2Df &vel_error,float &ya
 		target_vel.To2Dxy(target_2Dvel);
 	 
 		//error in optitrack frame
+		saturatedPosition(target_2Dpos);
 		pos_error=uav_2Dpos-target_2Dpos;
 		vel_error=uav_2Dvel;//-target_2Dvel;
 		Quaternion targetQuaternion;
@@ -270,6 +277,26 @@ void Camille::PositionValues(Vector2Df &pos_error,Vector2Df &vel_error,float &ya
 	//error in uav frame
 	pos_error.Rotate(-currentAngles.yaw);
 	vel_error.Rotate(-currentAngles.yaw);
+}
+
+void Camille::saturatedPosition(Vector2Df &position)
+{
+	if(position.x > saturated->Value().x)
+	{
+		position.x = saturated->Value().x;
+	}
+	if(position.x < -saturated->Value().x)
+	{
+		position.x = -saturated->Value().x;
+	}
+	if(position.y > saturated->Value().y)
+	{
+		position.y = saturated->Value().y;
+	}
+	if(position.y < -saturated->Value().y)
+	{
+		position.y = -saturated->Value().y;
+	}
 }
 
 void Camille::SignalEvent(Event_t event) {
