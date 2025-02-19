@@ -426,13 +426,10 @@ void Camille::ExtraCheckJoystick(void) {
 
 void Camille::CheckMessages(void) {
   if(message) {
-    float msg[4];
+    float msg[1];
     while(message->RecvMessage((char*)msg,sizeof(msg),TIME_NONBLOCK)>0) {
-			if(socketPos.x!=msg[0] || socketPos.y!=msg[1]) Printf("new socket pos %f %f\n",msg[0],msg[1]);
-			socketPos.x=msg[0];
-			socketPos.y=msg[1];
-			// msg[2] contains the z-coordinate, but we don't use it. 
-			yawFromSocket=msg[3];
+			if(yawFromSocket!=msg[0]) Printf("new socket angle:: %f\n",msg[0]);
+			yawFromSocket=msg[0];
     }
   }
 }
