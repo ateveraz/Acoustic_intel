@@ -59,10 +59,10 @@ legend({'Measured', 'Desired'}, 'Location', 'northoutside', 'Orientation', 'hori
 
 % Plot the tracking error
 figure;
-errorL2 = computeL2Error(dataLog);
-plot(dataLog.socket05.t, errorL2, 'b:', 'LineWidth', 2);
+dataLog.socket05 = computeL2ErrorXY(dataLog.socket05);
+plot(dataLog.socket05.t, dataLog.socket05.errorL2, 'b:', 'LineWidth', 2);
 hold on;
-yline(mean(errorL2), 'k', 'LineWidth', 2);
+yline(mean(dataLog.socket05.errorL2), 'k', 'LineWidth', 2);
 legend({'Error', 'Mean error'}, 'Location', 'northoutside', 'Orientation', 'horizontal', 'Interpreter', 'latex');
 xlabel('Time [s]');
 ylabel('Error [m]');
@@ -77,7 +77,7 @@ function new_vector = reduceSampleRate(vector, step, addNaN)
     end
 end
 
-function errorL2 = computeL2Error(dataLog)
+function dataLog_exp = computeL2ErrorXY(dataLog_exp)
     % Compute the L2 error
-    errorL2 = ((dataLog.socket05.xd(:,1) - dataLog.socket05.x(:,1)).^2 + (dataLog.socket05.xd(:,2) - dataLog.socket05.x(:,2)).^2).^0.5;
+    dataLog_exp.errorL2 = ((dataLog_exp.xd(:,1) - dataLog_exp.x(:,1)).^2 + (dataLog_exp.xd(:,2) - dataLog_exp.x(:,2)).^2).^0.5;
 end
