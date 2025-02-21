@@ -1,0 +1,39 @@
+{
+    "logging" :
+    [
+        {
+            "t" :
+            [
+                "time (us)"
+            ],
+            "x": 
+            [
+                "Drone_0 - x",
+                "Drone_0 - y",
+                "Drone_0 - z"
+            ],
+            "xd":
+            [
+                "CustomLogs - Desired_x", 
+                "CustomLogs - Desired_y"
+            ], 
+            "s": 
+            [
+                "car - x", 
+                "car - y", 
+                "car - z"
+            ]
+        }
+    ],
+    "experiments" :
+    [
+        {
+            "name" : "vrpn",
+            "folder_path" : "logging/20250219_1443_FlairGCS",
+            "start" : 18.74,
+            "end" : 38.52,
+            "offset" : 0.0
+        }
+    ]
+
+}
