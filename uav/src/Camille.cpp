@@ -58,7 +58,7 @@ Camille::Camille(TargetController *controller,string ugvName,uint16_t listeningP
   	uav->GetAhrs()->YawPlot()->AddCurve(targetVrpn->State()->Element(2),DataPlot::Black);
 															 
   	takeOffInPositionHold = new CheckBox(GetButtonsLayout()->NewRow(), "take off in position hold (and use z from optitrack)");
-	manualZVRPN=new PushButton(GetButtonsLayout()->NewRow(),"manualZVRPN");
+	manualPosition=new PushButton(GetButtonsLayout()->NewRow(),"manualZVRPN");
 	positionHold=new PushButton(GetButtonsLayout()->LastRowLastCol(),"positionHold");
 	carFollowing=new PushButton(GetButtonsLayout()->LastRowLastCol(),"CarFollowing");
 	gotoGcsPosition=new PushButton(GetButtonsLayout()->NewRow(),"gotoGcsPosition");
@@ -381,8 +381,8 @@ void Camille::ExtraSecurityCheck(void) {
 }
 
 void Camille::ExtraCheckPushButton(void) {
-	if(manualZVRPN->Clicked()) {
-		ManualZVRPN();
+	if(manualPosition->Clicked()) {
+		GotoManualPosition();
 	}
 	if(gotoGcsPosition->Clicked()) {
 		GotoGcsPosition();
@@ -404,12 +404,12 @@ void Camille::ExtraCheckPushButton(void) {
 void Camille::ExtraCheckJoystick(void) {
 	//R1+Circle
 	if(GetTargetController()->ButtonClicked(4) && GetTargetController()->IsButtonPressed(9)) {
-		ManualZVRPN();
+		GotoSourceUsingPathPlanning();
 	}
 
 	//R1+Cross
 	if(GetTargetController()->ButtonClicked(5) && GetTargetController()->IsButtonPressed(9)) {
-		GotoGcsPosition();
+		GotoManualPosition();
 	}
 	
 	//R1+Square
@@ -419,9 +419,8 @@ void Camille::ExtraCheckJoystick(void) {
 	
 	//R1+Triangle
 	if(GetTargetController()->ButtonClicked(3) && GetTargetController()->IsButtonPressed(9)) {
-		CarFollowing();
+		GotoSocketPosition();
 	}
-	//todo add a shortcut for goto socket position
 }
 
 void Camille::CheckMessages(void) {
@@ -445,6 +444,12 @@ void Camille::ManualZVRPN(void) {
 	}
 	behaviourMode=BehaviourMode_t::ManualZVRPN;
 	Thread::Info("Camille: ManualZVRPN mode\n");
+}
+
+void Camille::GotoManualPosition(void) {
+	behaviourMode=BehaviourMode_t::Default;
+	Thread::Info("Camille: ManualPosition mode\n");
+	EnterFailSafeMode();
 }
 
 void Camille::GotoGcsPosition(void) {
@@ -501,7 +506,7 @@ void Camille::computePathPlannig(Vector2Df uav_position, float angle, float step
 {
 	// Simulate path planning
 	next_position = uav_position + step * Vector2Df(cos(angle) + sin(angle), sin(angle) - cos(angle));
-
+	saturatedPosition(next_position);
 	// Update custom logs
 	customLogs->GetMutex();
 	customLogs->SetValue(0, 0, next_position.x);
