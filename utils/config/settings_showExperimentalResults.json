@@ -28,12 +28,20 @@
     "experiments" :
     [
         {
-            "name" : "vrpn",
-            "folder_path" : "logging/20250219_1443_FlairGCS",
-            "start" : 18.74,
-            "end" : 38.52,
+            "name" : "socket05",
+            "folder_path" : "logging/socket_step05_20250219",
+            "customTime": 1,
+            "start" : 13.7,
+            "end" : 65.47,
             "offset" : 0.0
+        },
+        {
+            "name": "vrpn1",
+            "folder_path": "logging/vrpn_step1_20250219",
+            "customTime": 0,
+            "start": 0,
+            "end": -1,
+            "offset": 0.0
         }
     ]
-
 }
