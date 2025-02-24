@@ -58,7 +58,7 @@ Camille::Camille(TargetController *controller,string ugvName,uint16_t listeningP
   	uav->GetAhrs()->YawPlot()->AddCurve(targetVrpn->State()->Element(2),DataPlot::Black);
 															 
   	takeOffInPositionHold = new CheckBox(GetButtonsLayout()->NewRow(), "take off in position hold (and use z from optitrack)");
-	manualPosition=new PushButton(GetButtonsLayout()->NewRow(),"manualZVRPN");
+	stopExperiment=new PushButton(GetButtonsLayout()->NewRow(),"Stop experiment");
 	positionHold=new PushButton(GetButtonsLayout()->LastRowLastCol(),"positionHold");
 	carFollowing=new PushButton(GetButtonsLayout()->LastRowLastCol(),"CarFollowing");
 	gotoGcsPosition=new PushButton(GetButtonsLayout()->NewRow(),"gotoGcsPosition");
@@ -275,7 +275,22 @@ void Camille::PositionValues(Vector2Df &pos_error,Vector2Df &vel_error,float &ya
 		Quaternion targetQuaternion;
 		targetVrpn->GetQuaternion(targetQuaternion);
 		yaw_ref=targetQuaternion.ToEuler().yaw;
-	} else if (behaviourMode==BehaviourMode_t::LowBatteryGotoLandingPosition || behaviourMode==BehaviourMode_t::LowBatteryLanding){
+	} 
+	else if (behaviourMode==BehaviourMode_t::GotoSafetyPosition){
+		// Vector2Df next_position;
+		//computePlanningForStop(uav_2Dpos, next_position);
+		//saturatedPosition(next_position);
+		pos_error=uav_2Dpos - safeLand->Value();
+		vel_error=uav_2Dvel;
+		yaw_ref=yawHold;
+
+		if (pos_error.GetNorm()<0.2) {
+			yaw_ref = 0;
+			// behaviourMode=BehaviourMode_t::Default;
+			Land();
+		}
+	}
+	else if (behaviourMode==BehaviourMode_t::LowBatteryGotoLandingPosition || behaviourMode==BehaviourMode_t::LowBatteryLanding){
 		pos_error=uav_2Dpos-safeLand->Value();
 		vel_error=uav_2Dvel;
 		yaw_ref=yawHold;
@@ -381,8 +396,9 @@ void Camille::ExtraSecurityCheck(void) {
 }
 
 void Camille::ExtraCheckPushButton(void) {
-	if(manualPosition->Clicked()) {
-		GotoManualPosition();
+	if(stopExperiment->Clicked()) {
+		// GotoManualPosition();
+		GotoSafetyWaitingPosition();
 	}
 	if(gotoGcsPosition->Clicked()) {
 		GotoGcsPosition();
@@ -409,7 +425,7 @@ void Camille::ExtraCheckJoystick(void) {
 
 	//R1+Cross
 	if(GetTargetController()->ButtonClicked(5) && GetTargetController()->IsButtonPressed(9)) {
-		GotoManualPosition();
+		GotoSafetyWaitingPosition();
 	}
 	
 	//R1+Square
@@ -419,7 +435,7 @@ void Camille::ExtraCheckJoystick(void) {
 	
 	//R1+Triangle
 	if(GetTargetController()->ButtonClicked(3) && GetTargetController()->IsButtonPressed(9)) {
-		GotoSocketPosition();
+		GotoGcsPosition();		
 	}
 }
 
@@ -450,6 +466,20 @@ void Camille::GotoManualPosition(void) {
 	behaviourMode=BehaviourMode_t::Default;
 	Thread::Info("Camille: ManualPosition mode\n");
 	EnterFailSafeMode();
+}
+
+void Camille::GotoSafetyWaitingPosition(void)
+{
+	behaviourMode=BehaviourMode_t::GotoSafetyPosition;
+	Thread::Info("Camille: SafetyWaitingPosition mode\n");
+	//step_size->Value() = 0.01;
+}
+
+void Camille::computePlanningForStop(flair::core::Vector2Df uav_position, flair::core::Vector2Df &next_position)
+{
+	// Compute the next position to stop the UAV
+	float angle = atan2(uav_position.y, uav_position.x);
+	computePathPlannig(uav_position, angle, 0.01, next_position);
 }
 
 void Camille::GotoGcsPosition(void) {
