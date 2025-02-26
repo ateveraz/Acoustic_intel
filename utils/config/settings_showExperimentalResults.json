@@ -42,6 +42,14 @@
             "start": 0,
             "end": -1,
             "offset": 0.0
+        }, 
+        {
+            "name": "problem",
+            "folder_path": "logging/yaw_problem",
+            "customTime": 0,
+            "start": 0,
+            "end": -1, 
+            "offset": 0.0
         }
     ]
 }

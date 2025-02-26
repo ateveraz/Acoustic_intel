@@ -1,0 +1,35 @@
+{
+    "logging" :
+    [
+        {
+            "t" :
+            [
+                "time (us)"
+            ],
+            "x": 
+            [
+                "Drone_0 - x",
+                "Drone_0 - y",
+                "Drone_0 - z"
+            ],
+            "q" :
+            [
+                "Drone_0 - q0",
+                "Drone_0 - q1",
+                "Drone_0 - q2",
+                "Drone_0 - q3"
+            ]   
+        }
+    ],
+    "experiments" :
+    [
+        {
+            "name": "problem",
+            "folder_path": "logging/yaw_problem",
+            "customTime": 0,
+            "start": 0,
+            "end": -1,
+            "offset": 0.0
+        }
+    ]
+}
