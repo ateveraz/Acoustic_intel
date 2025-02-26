@@ -1,0 +1,10 @@
+<!DOCTYPE remote_ui_xml>
+<root name="Drone_0">
+ <TabWidget name="Main_TabWidget">
+  <Tab name="uav">
+   <GridLayout name="buttons">
+    <PushButton value="1" name="positionHold"/>
+   </GridLayout>
+  </Tab>
+ </TabWidget>
+</root>

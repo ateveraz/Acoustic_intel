@@ -1,0 +1,6 @@
+1: time (us)
+2: time (ns)
+3: leddarone - leddarone (float)
+4: Passe bas -  (float)
+5: Vz - output (float)
+6: Passe bas v -  (float)

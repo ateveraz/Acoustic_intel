@@ -1,0 +1,12 @@
+<!DOCTYPE remote_ui_xml>
+<root name="Drone_0">
+ <TabWidget name="Main_TabWidget">
+  <Tab name="uav">
+   <GridLayout name="buttons">
+    <GroupBox name="Yaw settings">
+     <ComboBox value="1" name="Select yaw behavior"/>
+    </GroupBox>
+   </GridLayout>
+  </Tab>
+ </TabWidget>
+</root>

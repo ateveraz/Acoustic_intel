@@ -1,0 +1,3 @@
+planning using optitrack info, not socket
+
+step_size = 1
