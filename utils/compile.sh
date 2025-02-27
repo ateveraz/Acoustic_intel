@@ -30,9 +30,6 @@ if [[ "$1" == "-h" ]]; then
     display_help
 fi
 
-# Get the project name from the current working directory
-cd .. 
-
 PROJECT_NAME=$(basename "$PWD")
 PROJECT_NAME_FLAIR="Camille"
 
