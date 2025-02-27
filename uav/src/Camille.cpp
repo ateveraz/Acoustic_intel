@@ -17,6 +17,7 @@
 #include <GridLayout.h>
 #include <PushButton.h>
 #include <ComboBox.h>
+#include <Label.h>
 #include <GroupBox.h>
 #include <DoubleSpinBox.h>
 #include <CheckBox.h>
@@ -81,7 +82,11 @@ Camille::Camille(TargetController *controller,string ugvName,uint16_t listeningP
 	findSource = new PushButton(planning_settings->NewRow(), "Find source");
 	step_size = new DoubleSpinBox(planning_settings->NewRow(), "Step size", 0.01, 10, 0.1, 2);
 
+	// Security settings
 	security_settings = new GroupBox(GetButtonsLayout()->NewRow(), "Security");
+	showLogging = new CheckBox(security_settings->NewRow(), "Show logging");
+	desiredAngle = new Label(security_settings->LastRowLastCol(), "Desired angle");
+	desiredAngle->SetText("Waiting for angle from socket ...");
 	saturated = new Vector2DSpinBox(security_settings->NewRow(), "Saturated position", -3, 3, 2, 2);
 
 	uX=new Pid(setupLawTab->At(1,0),"u_x");
@@ -102,7 +107,7 @@ Camille::Camille(TargetController *controller,string ugvName,uint16_t listeningP
 	
 	listeningSocket=new TcpSocket(uav,"Message",false,false);
 	listeningSocket->Listen(listeningPort);
-  Thread::Info("Debug: Listening to port %d\n", listeningPort);
+//  Thread::Info("Debug: Listening to port %d\n", listeningPort);
   /*
   // accept incoming connection
   while (!message) {
@@ -207,6 +212,7 @@ void Camille::PositionValues(Vector2Df &pos_error,Vector2Df &vel_error,float &ya
 	Euler currentAngles;//in vrpn frame
 	currentQuaternion.ToEuler(currentAngles);
 
+
 	if (yawBehavior->CurrentIndex()==0) {
 		yawDesired = 0;
 	} else if (yawBehavior->CurrentIndex()==1) {
@@ -303,6 +309,7 @@ void Camille::PositionValues(Vector2Df &pos_error,Vector2Df &vel_error,float &ya
 		EnterFailSafeMode();
 	}
 
+	desiredAngle->SetText("Desired angle: %.2f", yaw_ref * 180 / M_PI);
 	//error in uav frame
 	pos_error.Rotate(-currentAngles.yaw);
 	vel_error.Rotate(-currentAngles.yaw);
