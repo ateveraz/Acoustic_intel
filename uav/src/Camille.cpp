@@ -309,7 +309,7 @@ void Camille::PositionValues(Vector2Df &pos_error,Vector2Df &vel_error,float &ya
 		EnterFailSafeMode();
 	}
 
-	desiredAngle->SetText("Desired angle: %.2f", yaw_ref * 180 / M_PI);
+	desiredAngle->SetText("Desired angle [deg]: %.2f", yaw_ref * 180 / M_PI);
 	//error in uav frame
 	pos_error.Rotate(-currentAngles.yaw);
 	vel_error.Rotate(-currentAngles.yaw);
